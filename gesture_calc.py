@@ -22,9 +22,11 @@ class GestureCalculator:
 
     def process(self):
         if self.hand_is_closed():
-            return "CLOSED"
+            return "FIST"
         elif self.is_peace_sign():
             return "PEACE"
+        elif self.is_one():
+            return "ONE"
         return None
 
     def set_finger_states(self):

@@ -1,6 +1,11 @@
 import mediapipe as mp
 import numpy as np
+import math
 from cv2 import cv2
+from typing import List, Tuple, Union
+from mediapipe.framework.formats import landmark_pb2
+
+RED_COLOR = (0, 0, 255)
 
 
 def draw_label(img, text, pos, bg_color):
@@ -12,11 +17,42 @@ def draw_label(img, text, pos, bg_color):
 
     txt_size = cv2.getTextSize(text, font_face, scale, thickness)
 
-    end_x = pos[0] + txt_size[0][0] + margin
-    end_y = pos[1] - txt_size[0][1] - margin
+    # end_x = pos[0] + txt_size[0][0] + margin
+    # end_y = pos[1] - txt_size[0][1] - margin
 
-    cv2.rectangle(img, pos, (end_x, end_y), bg_color, thickness)
-    cv2.putText(img, text, pos, font_face, scale, color, 1, cv2.LINE_AA)
+    # cv2.rectangle(img, pos, (end_x, end_y), bg_color, thickness)
+    cv2.putText(img, text, pos, font_face, scale, RED_COLOR, 1, cv2.LINE_AA)
+
+
+def _normalized_to_pixel_coordinates(
+    normalized_x: float, normalized_y: float, image_width: int, image_height: int
+) -> Union[None, Tuple[int, int]]:
+    x_px = min(math.floor(normalized_x * image_width), image_width - 1)
+    y_px = min(math.floor(normalized_y * image_height), image_height - 1)
+    return x_px, y_px
+
+
+def draw_landmark_bbox(
+    img: np.ndarray, hand_landmarks: landmark_pb2.NormalizedLandmarkList
+):
+    img_rows, img_cols, _ = img.shape
+    points = [(landmark.x, landmark.y) for landmark in hand_landmarks.landmark]
+
+    def get_edges(points):
+        print(points)
+        x_min = x_max = points[0][0]
+        y_min = y_max = points[0][1]
+        for x, y in points:
+            x_min = x if x < x_min else x_min
+            x_max = x if x > x_max else x_max
+            y_min = y if y < y_min else y_min
+            y_max = y if y > y_max else y_max
+        return _normalized_to_pixel_coordinates(
+            x_min, y_min, img_cols, img_rows
+        ) + _normalized_to_pixel_coordinates(x_max, y_max, img_cols, img_rows)
+
+    x_min, y_min, x_max, y_max = get_edges(points)
+    cv2.rectangle(img, (x_min, y_max), (x_max, y_min), RED_COLOR)
 
 
 class GestureClassifier:
