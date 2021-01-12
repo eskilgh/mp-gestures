@@ -1,6 +1,7 @@
 import numpy as np
 import mediapipe as mp
 from cv2 import cv2
+from mediapipe.framework.formats import landmark_pb2
 
 FINGER_INDICES = {
     # "THUMB": [1, 2, 3, 4],
@@ -16,8 +17,8 @@ def sq_distance(a, b):
 
 
 class GestureCalculator:
-    def __init__(self, landmarks):
-        self.landmarks = landmarks
+    def __init__(self, landmarks: landmark_pb2.NormalizedLandmarkList):
+        self.landmarks = landmarks.landmark
         self.set_finger_states()
 
     def process(self):
@@ -33,7 +34,6 @@ class GestureCalculator:
 
     def set_finger_states(self):
         self.finger_states = {"THUMB": "OPEN" if self.thumb_is_open() else "CLOSED"}
-        print("thumb is: ", self.finger_states["THUMB"])
         for finger in FINGER_INDICES:
             self.finger_states[finger] = (
                 "OPEN" if self.finger_is_open(finger) else "CLOSED"
@@ -41,39 +41,39 @@ class GestureCalculator:
 
     def hand_is_closed(self):
         return (
-            # self.finger_states["THUMB"] is "CLOSED"
-            self.finger_states["INDEX"] is "CLOSED"
-            and self.finger_states["MIDDLE"] is "CLOSED"
-            and self.finger_states["RING"] is "CLOSED"
-            and self.finger_states["PINKY"] is "CLOSED"
+            # self.finger_states["THUMB"] == "CLOSED"
+            self.finger_states["INDEX"] == "CLOSED"
+            and self.finger_states["MIDDLE"] == "CLOSED"
+            and self.finger_states["RING"] == "CLOSED"
+            and self.finger_states["PINKY"] == "CLOSED"
         )
 
     def is_peace_sign(self):
         return (
-            # self.finger_states["THUMB"] is "CLOSED"
-            self.finger_states["INDEX"] is "OPEN"
-            and self.finger_states["MIDDLE"] is "OPEN"
-            and self.finger_states["RING"] is "CLOSED"
-            and self.finger_states["PINKY"] is "CLOSED"
+            # self.finger_states["THUMB"] == "CLOSED"
+            self.finger_states["INDEX"] == "OPEN"
+            and self.finger_states["MIDDLE"] == "OPEN"
+            and self.finger_states["RING"] == "CLOSED"
+            and self.finger_states["PINKY"] == "CLOSED"
         )
 
     def is_pointing(self):
         return (
-            self.finger_states["INDEX"] is "OPEN"
-            and self.finger_states["MIDDLE"] is "CLOSED"
-            and self.finger_states["RING"] is "CLOSED"
-            and self.finger_states["PINKY"] is "CLOSED"
+            self.finger_states["INDEX"] == "OPEN"
+            and self.finger_states["MIDDLE"] == "CLOSED"
+            and self.finger_states["RING"] == "CLOSED"
+            and self.finger_states["PINKY"] == "CLOSED"
         )
 
     def is_rocking(self):
         return (
-            self.finger_states["INDEX"] is "OPEN"
-            and self.finger_states["MIDDLE"] is "CLOSED"
-            and self.finger_states["RING"] is "CLOSED"
-            and self.finger_states["PINKY"] is "OPEN"
+            self.finger_states["INDEX"] == "OPEN"
+            and self.finger_states["MIDDLE"] == "CLOSED"
+            and self.finger_states["RING"] == "CLOSED"
+            and self.finger_states["PINKY"] == "OPEN"
         )
 
-    def finger_is_open(self, finger):
+    def finger_is_open(self, finger: str):
         """Returns:
             True if distance from TIP to WRIST is greater than distance from IP to WRIST
         """
@@ -83,6 +83,8 @@ class GestureCalculator:
         return sq_distance(WRIST, TIP) > sq_distance(WRIST, DIP)
 
     def thumb_is_open(self):
+        # TODO: Implement a good version of this function.
+        # Does not work properly in it's current form
         WRIST = self.landmarks[0]
         THUMB_CMC = self.landmarks[1]
         THUMB_MCP = self.landmarks[2]

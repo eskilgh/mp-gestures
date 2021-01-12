@@ -1,8 +1,6 @@
 from cv2 import cv2
 import mediapipe as mp
-from gesture_classifier import (
-    GestureClassifier,
-    draw_label,
+from util import (
     draw_landmark_bbox,
     draw_handmarks_label,
 )
@@ -37,16 +35,11 @@ while cap.isOpened():
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
-            # draw_landmark_bbox(image, hand_landmarks)
+            mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             gesture_calc = GestureCalculator(hand_landmarks.landmark)
             gest_code = gesture_calc.process()
             if gest_code:
                 draw_handmarks_label(image, gest_code, hand_landmarks)
-                # draw_label(image, gest_code, (100, 100), (255, 0, 0))
-        # gc = GestureClassifier(results.multi_hand_landmarks)
-        # gesture_code = gc.process()
-        for hand_landmarks in results.multi_hand_landmarks:
-            mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
     cv2.imshow("MediaPipe Hands", image)
     if cv2.waitKey(5) & 0xFF == 27:
         break
