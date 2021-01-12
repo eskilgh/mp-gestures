@@ -8,7 +8,8 @@ import math
 # Dette er fordi vi kan kun måle vinkel i et nøkkelpunkt dersom det er et ledd
 def jointCurvature(lm, n):
     # Henter koordinatene til forrige, nåværende og neste ledd
-    points = lm[n - 1 : n + 2]
+    # Her må vi ta en dyp kopi for å passe på å ikke mutere lm
+    points = lm[n - 1 : n + 2].copy()
 
     # Dersom punktet vi står i er det første leddet på en finger
     # setter vi det forrige leddet til håndleddet
@@ -24,9 +25,8 @@ def jointCurvature(lm, n):
 
     # Regner ut et tall for krumningen som vil variere mellom 0 og 1/2 PI
     # Tilsvarende helt rett til helt krum
-    curvature = math.pi - a
 
-    return curvature
+    return math.pi - a
 
 # Inversen av dotproduktet for å finne vinkelen mellom to vektorer 
 angleBetweenVecs = lambda u, v: math.acos(np.divide(np.dot(u, v), magnitude(u) * magnitude(v)))
@@ -37,7 +37,7 @@ magnitude = lambda v: math.sqrt(sum(map(lambda X: math.pow(X, 2), v)))
 
 # Tar inn listen over alle nøkkelpunkter og indeksen til en finger
 # Returnerer summen av alle vinklene på den fingeren
-fingerCurvature = lambda lm, f: sum([jointCurvature(lm, n) for n in range(4 * f + 1, 4 * f + 3)])
+fingerCurvature = lambda lm, f: sum([jointCurvature(lm, n) for n in range(4 * f + 1, 4 * f + 4)])
 
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
@@ -81,7 +81,7 @@ while cap.isOpened():
 
             # Terminal output med ledd
             for finger in range(5):
-                for joint in range(4 * finger + 1, 4 * finger + 3):
+                for joint in range(4 * finger + 1, 4 * finger + 4):
                     print('Joint: {}, Curvature {}'.format(joint, jointCurvature(lm, joint)))
 
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
