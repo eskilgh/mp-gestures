@@ -1,5 +1,5 @@
 # mp-gestures
-Experiments on gesture recognition using mediapipe-hands library
+Experiments on gesture recognition using mediapipe-hands library.
 
 
 ## Installation
