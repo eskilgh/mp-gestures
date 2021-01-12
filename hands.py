@@ -36,7 +36,7 @@ while cap.isOpened():
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-            gesture_calc = GestureCalculator(hand_landmarks.landmark)
+            gesture_calc = GestureCalculator(hand_landmarks)
             gest_code = gesture_calc.process()
             if gest_code:
                 draw_handmarks_label(image, gest_code, hand_landmarks)
