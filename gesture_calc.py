@@ -3,7 +3,7 @@ import mediapipe as mp
 from cv2 import cv2
 
 FINGER_INDICES = {
-    "THUMB": [1, 2, 3, 4],
+    # "THUMB": [1, 2, 3, 4],
     "INDEX": [5, 6, 7, 8],
     "MIDDLE": [9, 10, 11, 12],
     "RING": [13, 14, 15, 16],
@@ -25,12 +25,15 @@ class GestureCalculator:
             return "FIST"
         elif self.is_peace_sign():
             return "PEACE"
-        elif self.is_one():
-            return "ONE"
+        elif self.is_pointing():
+            return "POINT"
+        elif self.is_rocking():
+            return "ROCK!"
         return None
 
     def set_finger_states(self):
-        self.finger_states = {}
+        self.finger_states = {"THUMB": "OPEN" if self.thumb_is_open() else "CLOSED"}
+        print("thumb is: ", self.finger_states["THUMB"])
         for finger in FINGER_INDICES:
             self.finger_states[finger] = (
                 "OPEN" if self.finger_is_open(finger) else "CLOSED"
@@ -54,7 +57,7 @@ class GestureCalculator:
             and self.finger_states["PINKY"] is "CLOSED"
         )
 
-    def is_one(self):
+    def is_pointing(self):
         return (
             self.finger_states["INDEX"] is "OPEN"
             and self.finger_states["MIDDLE"] is "CLOSED"
@@ -62,13 +65,29 @@ class GestureCalculator:
             and self.finger_states["PINKY"] is "CLOSED"
         )
 
+    def is_rocking(self):
+        return (
+            self.finger_states["INDEX"] is "OPEN"
+            and self.finger_states["MIDDLE"] is "CLOSED"
+            and self.finger_states["RING"] is "CLOSED"
+            and self.finger_states["PINKY"] is "OPEN"
+        )
+
     def finger_is_open(self, finger):
         """Returns:
             True if distance from TIP to WRIST is greater than distance from IP to WRIST
         """
-        print("landmark length:", len(self.landmarks))
         WRIST = self.landmarks[0]
         DIP = self.landmarks[FINGER_INDICES[finger][2]]
         TIP = self.landmarks[FINGER_INDICES[finger][3]]
         return sq_distance(WRIST, TIP) > sq_distance(WRIST, DIP)
+
+    def thumb_is_open(self):
+        WRIST = self.landmarks[0]
+        THUMB_CMC = self.landmarks[1]
+        THUMB_MCP = self.landmarks[2]
+        THUMB_IP = self.landmarks[3]
+        THUMB_TIP = self.landmarks[4]
+        INDEX_MCP = self.landmarks[5]
+        return sq_distance(THUMB_IP, INDEX_MCP) > sq_distance(THUMB_MCP, THUMB_IP)
 

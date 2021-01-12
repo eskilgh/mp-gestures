@@ -12,10 +12,27 @@ def draw_label(img, text, pos, bg_color):
     font_face = cv2.FONT_HERSHEY_SIMPLEX
     scale = 4
     color = (0, 0, 0)
-    thickness = cv2.FILLED
+    # thickness = cv2.LINE_AA
     margin = 2
 
-    txt_size = cv2.getTextSize(text, font_face, scale, thickness)
+    # txt_size = cv2.getTextSize(text, font_face, scale, thickness)
+
+    # end_x = pos[0] + txt_size[0][0] + margin
+    # end_y = pos[1] - txt_size[0][1] - margin
+
+    # cv2.rectangle(img, pos, (end_x, end_y), bg_color, thickness)
+    cv2.putText(img, text, pos, font_face, scale, RED_COLOR, 1, cv2.LINE_AA)
+
+
+def draw_handmarks_label(img, text, hand_landmarks, margin=20):
+    img_rows, img_cols, _ = img.shape
+    points = [(landmark.x, landmark.y) for landmark in hand_landmarks.landmark]
+    x_min, y_min, _, _ = _get_edges_in_pixels(points, img_cols, img_rows)
+    pos = x_min, y_min - margin
+    font_face = cv2.FONT_HERSHEY_SIMPLEX
+    scale = 2
+
+    # txt_size = cv2.getTextSize(text, font_face, scale, thickness)
 
     # end_x = pos[0] + txt_size[0][0] + margin
     # end_y = pos[1] - txt_size[0][1] - margin
@@ -32,26 +49,25 @@ def _normalized_to_pixel_coordinates(
     return x_px, y_px
 
 
+def _get_edges_in_pixels(points, img_width, img_height):
+    x_min = x_max = points[0][0]
+    y_min = y_max = points[0][1]
+    for x, y in points:
+        x_min = x if x < x_min else x_min
+        x_max = x if x > x_max else x_max
+        y_min = y if y < y_min else y_min
+        y_max = y if y > y_max else y_max
+    return _normalized_to_pixel_coordinates(
+        x_min, y_min, img_width, img_height
+    ) + _normalized_to_pixel_coordinates(x_max, y_max, img_width, img_height)
+
+
 def draw_landmark_bbox(
     img: np.ndarray, hand_landmarks: landmark_pb2.NormalizedLandmarkList
 ):
     img_rows, img_cols, _ = img.shape
     points = [(landmark.x, landmark.y) for landmark in hand_landmarks.landmark]
-
-    def get_edges(points):
-        print(points)
-        x_min = x_max = points[0][0]
-        y_min = y_max = points[0][1]
-        for x, y in points:
-            x_min = x if x < x_min else x_min
-            x_max = x if x > x_max else x_max
-            y_min = y if y < y_min else y_min
-            y_max = y if y > y_max else y_max
-        return _normalized_to_pixel_coordinates(
-            x_min, y_min, img_cols, img_rows
-        ) + _normalized_to_pixel_coordinates(x_max, y_max, img_cols, img_rows)
-
-    x_min, y_min, x_max, y_max = get_edges(points)
+    x_min, y_min, x_max, y_max = _get_edges_in_pixels(points, img_cols, img_rows)
     cv2.rectangle(img, (x_min, y_max), (x_max, y_min), RED_COLOR)
 
 
