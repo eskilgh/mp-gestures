@@ -54,20 +54,22 @@ def draw_landmark_bbox(
     x_min, y_min, x_max, y_max = get_edges_in_pixels(points, img_cols, img_rows)
     cv2.rectangle(img, (x_min, y_max), (x_max, y_min), RED_COLOR)
 
-
+# Viser malekosten og legger til i tegning dersom paint er sann 
 def show_brush(img: np.ndarray, fingertip: np.ndarray, paint: bool):
     x, y = calculate_stroke(img, fingertip)
-    cv2.ellipse(img, (x, y), (20, 20), 0, 0, 360, 222, -1)
+    cv2.ellipse(img, (x, y), (20, 20), 0, 0, 360, 222, 10)
 
     if paint:
         stroke.append((x, y))
 
 
+# Tegner linjer mellom alle punkter lagret i tegning
 def show_paint(img: np.ndarray):
     for i in range(len(stroke) - 1):
         cv2.line(img, stroke[i], stroke[i + 1], 222, 5)
 
-
+# Syntes normalized_fingertip tydeligvis var noe lang å skrive ut
+# Lagde denne helt på automatikk
 def calculate_stroke(img: np.ndarray, fingertip: np.ndarray):
     img_height, img_width, _ = img.shape
 
