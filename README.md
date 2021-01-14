@@ -1,6 +1,14 @@
 # mp-gestures
 Experiments on gesture recognition using mediapipe-hands library.
 
+# Denne branchen
+Kan tegne med bruk av pekefingeren
+
+Vise malekost ved å peke med tommel opp
+![malekost](pensel.png)
+
+Tenge ved å bare peke (ta tommel ned)
+![tegning](tegne.png)
 
 ## Installation
 Currently this repo has only been tested with python 3.7.9.
