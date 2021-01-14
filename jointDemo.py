@@ -32,8 +32,8 @@ while cap.isOpened():
 
             draw_landmark_bbox(image, hand_landmarks)
 
-            gestEst = GestureEstimator(hand_landmarks)
-            gesture = gestEst.getGesture()
+            gest_est = GestureEstimator(hand_landmarks)
+            gesture = gest_est.get_gesture()
 
             draw_handmarks_label(image, gesture, hand_landmarks)
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
