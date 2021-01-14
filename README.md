@@ -1,9 +1,6 @@
 # mp-gestures
 Experiments on gesture recognition using mediapipe-hands library.
 
-# Denne branchen
-Kan tegne med bruk av pekefingeren
-
 Vise malekost ved å peke med tommel opp
 ![malekost](pensel.png)
 
