@@ -6,6 +6,8 @@ from mediapipe.framework.formats import landmark_pb2
 
 RED_COLOR = (0, 0, 255)
 
+stroke = []
+
 
 def draw_handmarks_label(
     img: np.ndarray,
@@ -51,3 +53,26 @@ def draw_landmark_bbox(
     points = [(landmark.x, landmark.y) for landmark in hand_landmarks.landmark]
     x_min, y_min, x_max, y_max = get_edges_in_pixels(points, img_cols, img_rows)
     cv2.rectangle(img, (x_min, y_max), (x_max, y_min), RED_COLOR)
+
+
+def show_brush(img: np.ndarray, fingertip: np.ndarray, paint: bool):
+    x, y = calculate_stroke(img, fingertip)
+    cv2.ellipse(img, (x, y), (20, 20), 0, 0, 360, 222, -1)
+
+    if paint:
+        stroke.append((x, y))
+
+
+def show_paint(img: np.ndarray):
+    for i in range(len(stroke) - 1):
+        cv2.line(img, stroke[i], stroke[i + 1], 222, 5)
+
+
+def calculate_stroke(img: np.ndarray, fingertip: np.ndarray):
+    img_height, img_width, _ = img.shape
+
+    normalized_fingertip = normalized_to_pixel_coordinates(
+        fingertip[0], fingertip[1], img_width, img_height
+    )
+
+    return (normalized_fingertip[0], normalized_fingertip[1])

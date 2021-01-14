@@ -6,13 +6,14 @@ import numpy as np
 
 
 # Dette burde endres, men er en lett måte å definere statiske gesturer
+# Fingre som er lukket settes til True, fra tommel til lillefinger
 gestures = {
     "OPEN": [False] * 5,
     "CLOSED": [True] * 5,
     "PEACE": [True, False, False, True, True],
     "THUMBS_UP": [False, True, True, True, True],
-    "POINTING": [True, False, True, True, True],
     "ROCK": [True, False, True, True, False],
+    "SALUTE": [True, False, False, False, True],
 }
 
 
@@ -22,10 +23,13 @@ get_finger_joints = lambda finger: range(4 * finger + 1, 4 * (finger + 1))
 # Magnituden til en vilkårlig dimensjonal vektor v
 magnitude = lambda v: math.sqrt(sum(map(lambda X: math.pow(X, 2), v)))
 
-# Inversen av dotpruktet
+
+# Inversen av dotproduktet
 angle_between_vectors = lambda u, v: math.acos(
     np.divide(np.dot(u, v), magnitude(u) * magnitude(v))
 )
+
+lm_to_vector = lambda lm: np.array([lm.x, lm.y, lm.z])
 
 
 class GestureEstimator:
@@ -66,11 +70,11 @@ class GestureEstimator:
             landmark_triplet[0] = self.landmarks[0]
 
         # Konverterer landemerkene til en liste av vektorer
-        points = list(map(lambda p: np.array([p.x, p.y, p.z]), landmark_triplet))
+        node = np.array([lm_to_vector(lm) for lm in landmark_triplet])
 
-        # Henter ut vektorene som peker fra leddet til begge nabopunktene
-        u = points[0] - points[1]
-        v = points[2] - points[1]
+        # Regner ut vektorene som peker fra leddet til begge nabopunktene
+        u = node[0] - node[1]
+        v = node[2] - node[1]
 
         # Finner vinkelen mellom vektorene, denne ligger mellom 0 og PI
         a = angle_between_vectors(u, v)
@@ -85,3 +89,15 @@ class GestureEstimator:
 
     def set_finger_states(self):
         self.finger_states = [self.is_finger_closed(finger) for finger in range(5)]
+
+    def get_pointing_direction(self):
+        # Get first and last point in index finger
+        start_point, end_point = map(lm_to_vector, self.landmarks[5:9:3])
+
+        # Get vector from start_point to end_point and return its angle
+        diff_2d = (start_point - end_point)[:2]
+        angle = np.arctan(diff_2d[1] / diff_2d[0])
+        return angle
+
+    def get_pointing_fingertip(self):
+        return lm_to_vector(self.landmarks[8])

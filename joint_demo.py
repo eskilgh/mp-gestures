@@ -2,8 +2,15 @@ from cv2 import cv2
 import mediapipe as mp
 import numpy as np
 import math
-from util import draw_handmarks_label, draw_landmark_bbox
+from util import (
+    draw_handmarks_label,
+    draw_landmark_bbox,
+    show_brush,
+    show_paint,
+)
 from gesture_estimator import GestureEstimator
+import re
+
 
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
@@ -30,13 +37,21 @@ while cap.isOpened():
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
 
-            draw_landmark_bbox(image, hand_landmarks)
+            # draw_landmark_bbox(image, hand_landmarks)
 
             gest_est = GestureEstimator(hand_landmarks)
             gesture = gest_est.get_gesture()
 
-            draw_handmarks_label(image, gesture, hand_landmarks)
-            mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            if re.search("[OC]OCCC", gesture):
+                fingertip = gest_est.get_pointing_fingertip()
+                direction = gest_est.get_pointing_direction()
+
+                show_brush(image, fingertip, gesture[0] == "C")
+
+            # draw_handmarks_label(image, gesture, hand_landmarks)
+            # mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+    show_paint(image)
 
     cv2.imshow("Angles of joints", image)
 
