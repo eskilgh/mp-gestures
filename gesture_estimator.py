@@ -7,12 +7,12 @@ import numpy as np
 
 # Dette burde endres, men er en lett måte å definere statiske gesturer
 gestures = {
-    'OPEN' : [False] * 5,
-    'CLOSED' : [True] * 5,
-    'PEACE' : [True, False, False, True, True],
-    'THUMBS_UP' : [False, True, True, True, True],
-    'POINTING' : [True, False, True, True, True],
-    'ROCK' : [True, False, True, True, False]
+    "OPEN": [False] * 5,
+    "CLOSED": [True] * 5,
+    "PEACE": [True, False, False, True, True],
+    "THUMBS_UP": [False, True, True, True, True],
+    "POINTING": [True, False, True, True, True],
+    "ROCK": [True, False, True, True, False],
 }
 
 
@@ -23,7 +23,10 @@ getFingerJoints = lambda finger: range(4 * finger + 1, 4 * (finger + 1))
 magnitude = lambda v: math.sqrt(sum(map(lambda X: math.pow(X, 2), v)))
 
 # Inversen av dotpruktet
-angleBetweenVectors = lambda u, v: math.acos(np.divide(np.dot(u, v), magnitude(u) * magnitude(v)))
+angleBetweenVectors = lambda u, v: math.acos(
+    np.divide(np.dot(u, v), magnitude(u) * magnitude(v))
+)
+
 
 class GestureEstimator:
     def __init__(self, landmarks: landmark_pb2.NormalizedLandmarkList):
@@ -31,7 +34,7 @@ class GestureEstimator:
         self.set_finger_states()
 
     # Returnerer navnet til nåværende gestur
-    # dersom en matchende gestur ikke blir funnet returnerer statusen til hver finger 
+    # dersom en matchende gestur ikke blir funnet returnerer statusen til hver finger
     def getGesture(self):
 
         # Prøver å finne en matchende gestur
@@ -42,10 +45,14 @@ class GestureEstimator:
                 found = True
 
         # Tilbakefall om match ikke blir funnet, lager en streng av finger_states
-        fallback = lambda closedFingers: ''.join([{False : 'O', True : 'C'}[f] for f in closedFingers])
-        
-        if found: return gesture
-        else: return fallback(self.finger_states) 
+        fallback = lambda closedFingers: "".join(
+            [{False: "O", True: "C"}[f] for f in closedFingers]
+        )
+
+        if found:
+            return gesture
+        else:
+            return fallback(self.finger_states)
 
     # Tar inn indeksen til et ledd og returnerer krumning, et tall mellom 0 og 1/2 pi
     # Et ledd er et landemerke som ligger i mellom to andre landemerker
@@ -55,11 +62,12 @@ class GestureEstimator:
         landmarkTriplet = self.landmarks[joint - 1 : joint + 2].copy()
 
         # Dersom leddet er det første i en finger, settes første nabo til håndleddpunktet
-        if (joint - 1) % 4 == 0: landmarkTriplet[0] = self.landmarks[0]
-        
+        if (joint - 1) % 4 == 0:
+            landmarkTriplet[0] = self.landmarks[0]
+
         # Konverterer landemerkene til en liste av vektorer
         points = list(map(lambda p: np.array([p.x, p.y, p.z]), landmarkTriplet))
-        
+
         # Henter ut vektorene som peker fra leddet til begge nabopunktene
         u = points[0] - points[1]
         v = points[2] - points[1]
@@ -69,7 +77,6 @@ class GestureEstimator:
 
         return math.pi - a
 
-
     def fingerCurvature(self, finger):
         return sum([self.jointCurvature(joint) for joint in getFingerJoints(finger)])
 
@@ -78,5 +85,3 @@ class GestureEstimator:
 
     def set_finger_states(self):
         self.finger_states = [self.isFingerClosed(finger) for finger in range(5)]
-
-
