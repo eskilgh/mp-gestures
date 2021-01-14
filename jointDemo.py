@@ -41,35 +41,6 @@ while cap.isOpened():
             gesture = gestEst.getGesture()
 
             draw_handmarks_label(image, gesture, hand_landmarks) 
-            """
-            # Hente hele lista med punkter
-            lm = np.array([[p.x, p.y, p.z] for p in hand_landmarks.landmark])
-             
-            closedFingers = [isFingerClosed(lm, finger) for finger in range(5)]
-            
-            gesture = getGesture(closedFingers)
-                   
-            draw_handmarks_label(image, gesture, hand_landmarks)
-            """
-
-            """
-            # Escape symbol for clearing av terminal
-            print(chr(27) + "[2J")
-
-            # Terminal output med fingre
-            for finger in range(5):
-                print('Finger: {}, Curvature {}'.format(finger, fingerCurvature(lm, finger)))
-           
-            # Dirty newline
-            print('\n')
-
-            # Terminal output med ledd
-            for finger in range(5):
-                for joint in range(4 * finger + 1, 4 * finger + 4):
-                    print('Joint: {}, Curvature {}'.format(joint, jointCurvature(lm, joint)))
-
-            """
-
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
            
     cv2.imshow('Angles of joints', image)
